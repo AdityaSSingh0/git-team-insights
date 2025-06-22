@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import StatCard from '@/components/StatCard';
@@ -7,41 +6,50 @@ import ChartContainer from '@/components/ChartContainer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
-
-// Mock data for repository analytics
-const contributorData = [
-  { name: 'John Doe', commits: 145, color: '#8884d8' },
-  { name: 'Jane Smith', commits: 89, color: '#82ca9d' },
-  { name: 'Bob Wilson', commits: 67, color: '#ffc658' },
-  { name: 'Alice Brown', commits: 45, color: '#ff7300' },
-  { name: 'Charlie Davis', commits: 23, color: '#00ff88' },
-];
-
-const commitTimelineData = [
-  { date: '2024-01-01', commits: 12 },
-  { date: '2024-01-08', commits: 19 },
-  { date: '2024-01-15', commits: 8 },
-  { date: '2024-01-22', commits: 15 },
-  { date: '2024-01-29', commits: 25 },
-  { date: '2024-02-05', commits: 18 },
-  { date: '2024-02-12', commits: 22 },
-];
-
-const issueStatusData = [
-  { name: 'Open', value: 12, color: '#ff7300' },
-  { name: 'Closed', value: 45, color: '#82ca9d' },
-  { name: 'In Progress', value: 8, color: '#8884d8' },
-];
-
-const prActivityData = [
-  { week: 'Week 1', opened: 5, merged: 3, closed: 1 },
-  { week: 'Week 2', opened: 8, merged: 6, closed: 1 },
-  { week: 'Week 3', opened: 6, merged: 4, closed: 2 },
-  { week: 'Week 4', opened: 7, merged: 5, closed: 1 },
-];
+import { useRepositoryAnalytics } from '@/hooks/useRepositoryAnalytics';
+import { Loader2, RefreshCw, ExternalLink, GitCommit, GitPullRequest, AlertCircle, Users } from 'lucide-react';
 
 const RepositoryDetail = () => {
   const { name } = useParams<{ name: string }>();
+  const { data: analytics, isLoading, error, refetch } = useRepositoryAnalytics(name || '');
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <Navbar />
+        <main className="container mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <div className="text-6xl text-red-500 mb-4">⚠️</div>
+            <h3 className="text-lg font-medium text-red-600">Failed to load repository analytics</h3>
+            <p className="text-sm text-muted-foreground mt-2">
+              {error instanceof Error ? error.message : 'An error occurred'}
+            </p>
+            <Button onClick={() => refetch()} className="mt-4">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Try Again
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <Navbar />
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2 text-muted-foreground">Loading repository analytics...</span>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const repositoryData = analytics?.rawData?.commits?.[0];
+  const repoUrl = `https://github.com/${repositoryData?.commit?.author?.name || 'unknown'}/${name}`;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -59,10 +67,17 @@ const RepositoryDetail = () => {
                 </p>
               </div>
               <div className="flex items-center space-x-2">
-                <Badge variant="secondary">TypeScript</Badge>
-                <Badge variant="outline">Public</Badge>
-                <Button variant="outline">
-                  View on GitHub
+                <Badge variant="secondary">Active</Badge>
+                <Badge variant="outline">Repository</Badge>
+                <Button variant="outline" asChild>
+                  <a href={repoUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    View on GitHub
+                  </a>
+                </Button>
+                <Button onClick={() => refetch()} variant="outline" disabled={isLoading}>
+                  <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                  Refresh
                 </Button>
               </div>
             </div>
@@ -72,27 +87,31 @@ const RepositoryDetail = () => {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 animate-slide-up">
             <StatCard
               title="Total Commits"
-              value="369"
-              description="28 this month"
-              trend={{ value: 15, isPositive: true }}
+              value={analytics?.metrics?.totalCommits?.toString() || "0"}
+              description="Recent commit activity"
+              trend={{ value: 0, isPositive: true }}
+              icon={GitCommit}
             />
             <StatCard
               title="Contributors"
-              value="5"
-              description="2 active this week"
-              trend={{ value: 25, isPositive: true }}
+              value={analytics?.metrics?.activeContributors?.toString() || "0"}
+              description="Active contributors"
+              trend={{ value: 0, isPositive: true }}
+              icon={Users}
             />
             <StatCard
               title="Pull Requests"
-              value="47"
-              description="3 pending review"
-              trend={{ value: 8, isPositive: true }}
+              value={analytics?.metrics?.totalPRs?.toString() || "0"}
+              description={`${analytics?.metrics?.openPRs || 0} currently open`}
+              trend={{ value: 0, isPositive: true }}
+              icon={GitPullRequest}
             />
             <StatCard
               title="Issues"
-              value="65"
-              description="12 currently open"
-              trend={{ value: -12, isPositive: false }}
+              value={analytics?.metrics?.totalIssues?.toString() || "0"}
+              description={`${analytics?.metrics?.openIssues || 0} currently open`}
+              trend={{ value: 0, isPositive: true }}
+              icon={AlertCircle}
             />
           </div>
 
@@ -101,10 +120,10 @@ const RepositoryDetail = () => {
             {/* Contributor Activity */}
             <ChartContainer 
               title="Top Contributors" 
-              description="Commit count by team member"
+              description="Most active contributors by commits"
             >
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={contributorData} layout="horizontal">
+                <BarChart data={analytics?.contributorData || []} layout="horizontal">
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis type="number" />
                   <YAxis type="category" dataKey="name" width={100} />
@@ -122,7 +141,7 @@ const RepositoryDetail = () => {
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={issueStatusData}
+                    data={analytics?.issueStatusData || []}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -130,7 +149,7 @@ const RepositoryDetail = () => {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {issueStatusData.map((entry, index) => (
+                    {(analytics?.issueStatusData || []).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -145,14 +164,20 @@ const RepositoryDetail = () => {
             {/* Commit Timeline */}
             <ChartContainer 
               title="Commit Activity Timeline" 
-              description="Weekly commit frequency over time"
+              description="Daily commit frequency over time"
             >
               <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={commitTimelineData}>
+                <AreaChart data={analytics?.commitTimeline || []}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" tickFormatter={(value) => new Date(value).toLocaleDateString()} />
+                  <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(value) => new Date(value).toLocaleDateString()}
+                  />
                   <YAxis />
-                  <Tooltip labelFormatter={(value) => new Date(value).toLocaleDateString()} />
+                  <Tooltip 
+                    labelFormatter={(value) => new Date(value).toLocaleDateString()}
+                    formatter={(value) => [value, 'Commits']}
+                  />
                   <Area 
                     type="monotone" 
                     dataKey="commits" 
@@ -167,14 +192,19 @@ const RepositoryDetail = () => {
             {/* PR Activity */}
             <ChartContainer 
               title="Pull Request Activity" 
-              description="Weekly PR statistics"
+              description="PR statistics over time"
             >
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={prActivityData}>
+                <LineChart data={analytics?.prData || []}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="week" />
+                  <XAxis 
+                    dataKey="week"
+                    tickFormatter={(value) => new Date(value).toLocaleDateString()}
+                  />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip 
+                    labelFormatter={(value) => new Date(value).toLocaleDateString()}
+                  />
                   <Line 
                     type="monotone" 
                     dataKey="opened" 
@@ -200,6 +230,33 @@ const RepositoryDetail = () => {
               </ResponsiveContainer>
             </ChartContainer>
           </div>
+
+          {/* Recent Activity Summary */}
+          {analytics?.rawData && (
+            <div className="bg-white rounded-lg border p-6">
+              <h3 className="text-lg font-semibold mb-4">Recent Activity Summary</h3>
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
+                    {analytics.rawData.commits.length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Recent Commits</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
+                    {analytics.rawData.pullRequests.length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Total Pull Requests</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
+                    {analytics.rawData.contributors.length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Contributors</div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>

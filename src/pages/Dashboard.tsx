@@ -2,36 +2,46 @@
 import Navbar from '@/components/Navbar';
 import StatCard from '@/components/StatCard';
 import ChartContainer from '@/components/ChartContainer';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-
-// Mock data for now - we'll replace this with real data later
-const commitData = [
-  { name: 'Mon', commits: 12 },
-  { name: 'Tue', commits: 19 },
-  { name: 'Wed', commits: 8 },
-  { name: 'Thu', commits: 15 },
-  { name: 'Fri', commits: 25 },
-  { name: 'Sat', commits: 6 },
-  { name: 'Sun', commits: 4 },
-];
-
-const languageData = [
-  { name: 'TypeScript', value: 45, color: '#3178c6' },
-  { name: 'JavaScript', value: 30, color: '#f7df1e' },
-  { name: 'Python', value: 15, color: '#3776ab' },
-  { name: 'Other', value: 10, color: '#8884d8' },
-];
-
-const prData = [
-  { month: 'Jan', opened: 15, merged: 12, closed: 2 },
-  { month: 'Feb', opened: 22, merged: 18, closed: 3 },
-  { month: 'Mar', opened: 18, merged: 16, closed: 1 },
-  { month: 'Apr', opened: 25, merged: 22, closed: 2 },
-  { month: 'May', opened: 20, merged: 17, closed: 2 },
-  { month: 'Jun', opened: 28, merged: 24, closed: 3 },
-];
+import RepositoryCard from '@/components/RepositoryCard';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { useDashboardAnalytics } from '@/hooks/useDashboardAnalytics';
+import { useGitHubRepositories } from '@/hooks/useGitHubRepositories';
+import { Loader2, RefreshCw, Search, TrendingUp, GitBranch, Star, Users } from 'lucide-react';
+import { useState } from 'react';
 
 const Dashboard = () => {
+  const { data: repositories, isLoading: reposLoading, refetch: refetchRepos } = useGitHubRepositories();
+  const { data: analytics, isLoading: analyticsLoading, refetch: refetchAnalytics } = useDashboardAnalytics();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const isLoading = reposLoading || analyticsLoading;
+
+  const filteredRepositories = repositories?.filter(repo =>
+    repo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    repo.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  ).slice(0, 6) || [];
+
+  const handleRefresh = () => {
+    refetchRepos();
+    refetchAnalytics();
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <Navbar />
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2 text-muted-foreground">Loading dashboard analytics...</span>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
@@ -40,54 +50,67 @@ const Dashboard = () => {
         <div className="space-y-8">
           {/* Header */}
           <div className="animate-fade-in">
-            <h1 className="text-3xl font-bold">Welcome to your Dashboard!</h1>
-            <p className="text-muted-foreground mt-2">
-              Here's an overview of your GitHub activity and collaboration metrics
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold">Dashboard</h1>
+                <p className="text-muted-foreground mt-2">
+                  Your GitHub analytics and collaboration insights
+                </p>
+              </div>
+              <Button onClick={handleRefresh} variant="outline" disabled={isLoading}>
+                <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </div>
           </div>
 
-          {/* Stats Grid */}
+          {/* Key Metrics */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 animate-slide-up">
             <StatCard
               title="Total Repositories"
-              value="24"
-              description="8 active this month"
-              trend={{ value: 12, isPositive: true }}
+              value={analytics?.metrics.totalRepositories.toString() || "0"}
+              description={`${analytics?.metrics.publicRepos || 0} public, ${analytics?.metrics.privateRepos || 0} private`}
+              trend={{ value: 0, isPositive: true }}
+              icon={GitBranch}
             />
             <StatCard
-              title="Total Commits"
-              value="1,247"
-              description="89 this week"
-              trend={{ value: 8, isPositive: true }}
+              title="Total Stars"
+              value={analytics?.metrics.totalStars.toString() || "0"}
+              description="Across all repositories"
+              trend={{ value: 0, isPositive: true }}
+              icon={Star}
+            />
+            <StatCard
+              title="Recent Commits"
+              value={analytics?.metrics.totalCommits.toString() || "0"}
+              description="Last 20 commits per repo"
+              trend={{ value: 0, isPositive: true }}
+              icon={TrendingUp}
             />
             <StatCard
               title="Pull Requests"
-              value="156"
-              description="12 pending review"
-              trend={{ value: -3, isPositive: false }}
-            />
-            <StatCard
-              title="Code Reviews"
-              value="89"
-              description="5 completed today"
-              trend={{ value: 15, isPositive: true }}
+              value={analytics?.metrics.totalPRs.toString() || "0"}
+              description="Total across repositories"
+              trend={{ value: 0, isPositive: true }}
+              icon={Users}
             />
           </div>
 
           {/* Charts Grid */}
           <div className="grid gap-6 lg:grid-cols-2">
-            {/* Commit Activity */}
+            {/* Repository Activity */}
             <ChartContainer 
-              title="Weekly Commit Activity" 
-              description="Commits made in the last 7 days"
+              title="Repository Activity" 
+              description="Commits and pull requests by repository"
             >
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={commitData}>
+                <BarChart data={analytics?.repoActivityData || []}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="commits" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="commits" fill="hsl(var(--primary))" name="Commits" />
+                  <Bar dataKey="pullRequests" fill="#82ca9d" name="Pull Requests" />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -95,12 +118,12 @@ const Dashboard = () => {
             {/* Language Distribution */}
             <ChartContainer 
               title="Language Distribution" 
-              description="Programming languages used across repositories"
+              description="Programming languages across repositories"
             >
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={languageData}
+                    data={analytics?.languageData || []}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -108,52 +131,59 @@ const Dashboard = () => {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {languageData.map((entry, index) => (
+                    {(analytics?.languageData || []).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => [`${value}%`, 'Usage']} />
+                  <Tooltip formatter={(value, name) => [value, name]} />
                 </PieChart>
               </ResponsiveContainer>
             </ChartContainer>
           </div>
 
-          {/* Pull Request Trends */}
-          <ChartContainer 
-            title="Pull Request Trends" 
-            description="Monthly pull request activity over the last 6 months"
-            className="w-full"
-          >
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={prData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Line 
-                  type="monotone" 
-                  dataKey="opened" 
-                  stroke="#8884d8" 
-                  strokeWidth={3}
-                  name="Opened"
+          {/* Repository Grid */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Recent Repositories</h2>
+              <div className="flex items-center space-x-2">
+                <Search className="w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search repositories..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-64"
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="merged" 
-                  stroke="#82ca9d" 
-                  strokeWidth={3}
-                  name="Merged"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="closed" 
-                  stroke="#ff7300" 
-                  strokeWidth={3}
-                  name="Closed"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
+              </div>
+            </div>
+
+            {filteredRepositories.length > 0 ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 animate-slide-up">
+                {filteredRepositories.map((repository) => (
+                  <RepositoryCard 
+                    key={repository.id} 
+                    repository={{
+                      id: repository.id,
+                      name: repository.name,
+                      description: repository.description || '',
+                      language: repository.language || 'Unknown',
+                      stars: repository.stargazers_count,
+                      forks: repository.forks_count,
+                      updated_at: repository.updated_at,
+                      private: repository.private,
+                    }} 
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 animate-fade-in">
+                <div className="text-6xl text-muted-foreground mb-4">🔍</div>
+                <h3 className="text-lg font-medium text-muted-foreground">No repositories found</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {searchTerm ? 'Try adjusting your search term' : 'Create your first repository to get started'}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>
