@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Repositories from "./pages/Repositories";
 import RepositoryDetail from "./pages/RepositoryDetail";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -22,9 +23,30 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/repositories" element={<Repositories />} />
-          <Route path="/repository/:name" element={<RepositoryDetail />} />
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/repositories" 
+            element={
+              <ProtectedRoute>
+                <Repositories />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/repository/:name" 
+            element={
+              <ProtectedRoute>
+                <RepositoryDetail />
+              </ProtectedRoute>
+            } 
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

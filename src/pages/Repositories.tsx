@@ -6,13 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// Mock data
-const mockUser = {
-  name: "John Doe",
-  avatar_url: "https://github.com/github.png",
-  login: "johndoe"
-};
-
+// Mock data for now - we'll replace this with real data later
 const mockRepositories = [
   {
     id: 1,
@@ -77,16 +71,10 @@ const mockRepositories = [
 ];
 
 const Repositories = () => {
-  const [user] = useState(mockUser);
   const [repositories] = useState(mockRepositories);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('updated');
   const [filterBy, setFilterBy] = useState('all');
-
-  const handleLogout = () => {
-    console.log('Logging out...');
-    window.location.href = '/login';
-  };
 
   const filteredRepositories = repositories
     .filter(repo => {
@@ -113,7 +101,7 @@ const Repositories = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Navbar user={user} onLogout={handleLogout} />
+      <Navbar />
       
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-8">

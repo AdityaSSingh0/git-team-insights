@@ -8,13 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 
-// Mock data
-const mockUser = {
-  name: "John Doe",
-  avatar_url: "https://github.com/github.png",
-  login: "johndoe"
-};
-
+// Mock data for repository analytics
 const contributorData = [
   { name: 'John Doe', commits: 145, color: '#8884d8' },
   { name: 'Jane Smith', commits: 89, color: '#82ca9d' },
@@ -48,16 +42,10 @@ const prActivityData = [
 
 const RepositoryDetail = () => {
   const { name } = useParams<{ name: string }>();
-  const [user] = useState(mockUser);
-
-  const handleLogout = () => {
-    console.log('Logging out...');
-    window.location.href = '/login';
-  };
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Navbar user={user} onLogout={handleLogout} />
+      <Navbar />
       
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-8">

@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,20 +8,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/hooks/useAuth';
 
-interface NavbarProps {
-  user?: {
-    name: string;
-    avatar_url: string;
-    login: string;
-  };
-  onLogout?: () => void;
-}
-
-const Navbar = ({ user, onLogout }: NavbarProps) => {
+const Navbar = () => {
   const location = useLocation();
+  const { user, signOut } = useAuth();
   
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = async () => {
+    await signOut();
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -65,19 +61,19 @@ const Navbar = ({ user, onLogout }: NavbarProps) => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src={user.avatar_url} alt={user.name} />
-                    <AvatarFallback>{user.name?.charAt(0) || user.login?.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name || user.user_metadata.user_name} />
+                    <AvatarFallback>{user.user_metadata.full_name?.charAt(0) || user.user_metadata.user_name?.charAt(0) || 'U'}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <div className="flex items-center justify-start gap-2 p-2">
                   <div className="flex flex-col space-y-1 leading-none">
-                    <p className="font-medium">{user.name || user.login}</p>
-                    <p className="text-xs text-muted-foreground">@{user.login}</p>
+                    <p className="font-medium">{user.user_metadata.full_name || user.user_metadata.user_name}</p>
+                    <p className="text-xs text-muted-foreground">@{user.user_metadata.user_name}</p>
                   </div>
                 </div>
-                <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                   Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>

@@ -9,7 +9,136 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      commits: {
+        Row: {
+          additions: number | null
+          author_email: string | null
+          author_name: string | null
+          commit_date: string | null
+          created_at: string
+          deletions: number | null
+          id: string
+          message: string | null
+          repository_id: string
+          sha: string
+        }
+        Insert: {
+          additions?: number | null
+          author_email?: string | null
+          author_name?: string | null
+          commit_date?: string | null
+          created_at?: string
+          deletions?: number | null
+          id?: string
+          message?: string | null
+          repository_id: string
+          sha: string
+        }
+        Update: {
+          additions?: number | null
+          author_email?: string | null
+          author_name?: string | null
+          commit_date?: string | null
+          created_at?: string
+          deletions?: number | null
+          id?: string
+          message?: string | null
+          repository_id?: string
+          sha?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commits_repository_id_fkey"
+            columns: ["repository_id"]
+            isOneToOne: false
+            referencedRelation: "repositories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          github_access_token: string | null
+          github_avatar_url: string | null
+          github_name: string | null
+          github_username: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          github_access_token?: string | null
+          github_avatar_url?: string | null
+          github_name?: string | null
+          github_username?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          github_access_token?: string | null
+          github_avatar_url?: string | null
+          github_name?: string | null
+          github_username?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      repositories: {
+        Row: {
+          created_at: string
+          description: string | null
+          forks_count: number | null
+          full_name: string
+          github_id: number
+          id: string
+          language: string | null
+          name: string
+          private: boolean | null
+          stars_count: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          forks_count?: number | null
+          full_name: string
+          github_id: number
+          id?: string
+          language?: string | null
+          name: string
+          private?: boolean | null
+          stars_count?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          forks_count?: number | null
+          full_name?: string
+          github_id?: number
+          id?: string
+          language?: string | null
+          name?: string
+          private?: boolean | null
+          stars_count?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repositories_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

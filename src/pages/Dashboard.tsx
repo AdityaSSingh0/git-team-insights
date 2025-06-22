@@ -1,17 +1,10 @@
 
-import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import StatCard from '@/components/StatCard';
 import ChartContainer from '@/components/ChartContainer';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 
-// Mock data - in real app this would come from your backend
-const mockUser = {
-  name: "John Doe",
-  avatar_url: "https://github.com/github.png",
-  login: "johndoe"
-};
-
+// Mock data for now - we'll replace this with real data later
 const commitData = [
   { name: 'Mon', commits: 12 },
   { name: 'Tue', commits: 19 },
@@ -39,22 +32,15 @@ const prData = [
 ];
 
 const Dashboard = () => {
-  const [user] = useState(mockUser);
-
-  const handleLogout = () => {
-    console.log('Logging out...');
-    window.location.href = '/login';
-  };
-
   return (
     <div className="min-h-screen bg-slate-50">
-      <Navbar user={user} onLogout={handleLogout} />
+      <Navbar />
       
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-8">
           {/* Header */}
           <div className="animate-fade-in">
-            <h1 className="text-3xl font-bold">Welcome back, {user.name}!</h1>
+            <h1 className="text-3xl font-bold">Welcome to your Dashboard!</h1>
             <p className="text-muted-foreground mt-2">
               Here's an overview of your GitHub activity and collaboration metrics
             </p>

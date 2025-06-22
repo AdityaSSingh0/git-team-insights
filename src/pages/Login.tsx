@@ -1,14 +1,31 @@
 
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/hooks/useAuth';
 
 const Login = () => {
-  const handleGitHubLogin = () => {
-    // This would redirect to GitHub OAuth in a real implementation
-    console.log('Redirecting to GitHub OAuth...');
-    // For demo purposes, we'll simulate login
-    window.location.href = '/dashboard';
+  const { user, signInWithGitHub, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
+  const handleGitHubLogin = async () => {
+    await signInWithGitHub();
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
