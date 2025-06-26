@@ -1,4 +1,3 @@
-
 export interface GitHubCommit {
   sha: string;
   commit: {
@@ -72,6 +71,8 @@ export class GitHubApiService {
   }
 
   private async makeRequest<T>(endpoint: string): Promise<T> {
+    console.log(`Making GitHub API request to: ${endpoint}`);
+    
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       headers: {
         'Authorization': `token ${this.token}`,
@@ -80,10 +81,23 @@ export class GitHubApiService {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`GitHub API error for ${endpoint}:`, response.status, errorText);
+      
+      if (response.status === 401) {
+        throw new Error('GitHub authentication failed. Please sign in again.');
+      } else if (response.status === 403) {
+        throw new Error('GitHub API rate limit exceeded. Please try again later.');
+      } else if (response.status === 404) {
+        throw new Error('Repository not found or you do not have access to it.');
+      }
+      
       throw new Error(`GitHub API error: ${response.statusText}`);
     }
 
-    return response.json();
+    const data = await response.json();
+    console.log(`GitHub API response for ${endpoint}:`, data);
+    return data;
   }
 
   async getRepositoryCommits(owner: string, repo: string, page = 1, perPage = 100): Promise<GitHubCommit[]> {

@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 interface GitHubRepository {
   id: number;
@@ -21,6 +22,7 @@ interface GitHubRepository {
 
 export const useGitHubRepositories = () => {
   const { session } = useAuth();
+  const { toast } = useToast();
 
   return useQuery({
     queryKey: ['github-repositories', session?.user?.id],
@@ -28,6 +30,8 @@ export const useGitHubRepositories = () => {
       if (!session?.provider_token) {
         throw new Error('No GitHub access token available');
       }
+
+      console.log('Fetching repositories...');
 
       const response = await fetch('https://api.github.com/user/repos?sort=updated&per_page=100', {
         headers: {
@@ -37,12 +41,31 @@ export const useGitHubRepositories = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch repositories');
+        const errorText = await response.text();
+        console.error('GitHub API error:', response.status, errorText);
+        
+        if (response.status === 401) {
+          throw new Error('GitHub authentication failed. Please sign in again.');
+        } else if (response.status === 403) {
+          throw new Error('GitHub API rate limit exceeded. Please try again later.');
+        }
+        
+        throw new Error(`Failed to fetch repositories: ${response.statusText}`);
       }
 
-      return response.json();
+      const data = await response.json();
+      console.log('Fetched repositories:', data.length);
+      return data;
     },
     enabled: !!session?.provider_token,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    onError: (error: Error) => {
+      console.error('Repository fetch error:', error);
+      toast({
+        title: "Error fetching repositories",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 };
