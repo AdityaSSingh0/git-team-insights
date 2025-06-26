@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
-import { Github, AlertCircle } from 'lucide-react';
+import { Github, AlertCircle, ExternalLink, CheckCircle } from 'lucide-react';
 
 const Login = () => {
   const { user, signInWithGitHub, loading } = useAuth();
@@ -31,7 +31,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-2xl space-y-8">
         <div className="text-center">
           <div className="mx-auto h-16 w-16 rounded-full bg-primary flex items-center justify-center mb-4">
             <span className="text-primary-foreground font-bold text-2xl">G</span>
@@ -55,8 +55,7 @@ const Login = () => {
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                <strong>Setup Required:</strong> GitHub OAuth needs to be configured in your Supabase project. 
-                Please check the authentication settings in your Supabase dashboard.
+                <strong>Setup Required:</strong> Complete the GitHub OAuth setup below before signing in.
               </AlertDescription>
             </Alert>
             
@@ -75,16 +74,68 @@ const Login = () => {
           </CardContent>
         </Card>
 
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground">
-            <h3 className="font-semibold mb-2">Configuration Steps:</h3>
-            <ol className="list-decimal list-inside space-y-1">
-              <li>Go to your Supabase project dashboard</li>
-              <li>Navigate to Authentication → Providers</li>
-              <li>Enable GitHub provider</li>
-              <li>Add your GitHub OAuth app credentials</li>
-              <li>Set the redirect URL to: {window.location.origin}/dashboard</li>
-            </ol>
+        <Card className="p-6">
+          <div className="text-sm">
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <Github className="h-4 w-4" />
+              GitHub OAuth Setup Instructions
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Step 1: Create GitHub OAuth App</h4>
+                <ol className="list-decimal list-inside space-y-1 text-gray-600 ml-2">
+                  <li>Go to <a href="https://github.com/settings/developers" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-1">GitHub Developer Settings <ExternalLink className="h-3 w-3" /></a></li>
+                  <li>Click "New OAuth App"</li>
+                  <li>Fill in the application details:
+                    <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
+                      <li><strong>Application name:</strong> Gitlytics</li>
+                      <li><strong>Homepage URL:</strong> {window.location.origin}</li>
+                      <li><strong>Authorization callback URL:</strong> https://nlnhpqkgyigztumogcge.supabase.co/auth/v1/callback</li>
+                    </ul>
+                  </li>
+                  <li>Click "Register application"</li>
+                  <li>Copy the <strong>Client ID</strong> and generate a <strong>Client Secret</strong></li>
+                </ol>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Step 2: Configure Supabase</h4>
+                <ol className="list-decimal list-inside space-y-1 text-gray-600 ml-2">
+                  <li>Go to <a href="https://supabase.com/dashboard/project/nlnhpqkgyigztumogcge/auth/providers" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-1">Supabase Auth Providers <ExternalLink className="h-3 w-3" /></a></li>
+                  <li>Find and enable the GitHub provider</li>
+                  <li>Enter your GitHub OAuth app credentials:
+                    <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
+                      <li>Paste the <strong>Client ID</strong></li>
+                      <li>Paste the <strong>Client Secret</strong></li>
+                    </ul>
+                  </li>
+                  <li>Set the redirect URL to: <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">{window.location.origin}/dashboard</code></li>
+                  <li>Click "Save"</li>
+                </ol>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Step 3: Configure URL Settings</h4>
+                <ol className="list-decimal list-inside space-y-1 text-gray-600 ml-2">
+                  <li>Go to <a href="https://supabase.com/dashboard/project/nlnhpqkgyigztumogcge/auth/url-configuration" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-1">Supabase URL Configuration <ExternalLink className="h-3 w-3" /></a></li>
+                  <li>Set the <strong>Site URL</strong> to: <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">{window.location.origin}</code></li>
+                  <li>Add <strong>Redirect URLs</strong>:
+                    <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
+                      <li><code className="bg-gray-100 px-1 py-0.5 rounded text-xs">{window.location.origin}/dashboard</code></li>
+                      <li><code className="bg-gray-100 px-1 py-0.5 rounded text-xs">{window.location.origin}/**</code></li>
+                    </ul>
+                  </li>
+                  <li>Click "Save"</li>
+                </ol>
+              </div>
+
+              <Alert>
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>After completing setup:</strong> Refresh this page and try signing in with GitHub!
+                </AlertDescription>
+              </Alert>
+            </div>
           </div>
         </Card>
       </div>

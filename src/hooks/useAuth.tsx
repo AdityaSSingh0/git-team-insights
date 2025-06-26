@@ -22,7 +22,7 @@ export const useAuth = () => {
         if (event === 'SIGNED_IN') {
           toast({
             title: "Welcome!",
-            description: "You have successfully signed in.",
+            description: "You have successfully signed in with GitHub.",
           });
         } else if (event === 'SIGNED_OUT') {
           toast({
@@ -60,17 +60,26 @@ export const useAuth = () => {
         provider: 'github',
         options: {
           redirectTo: redirectUrl,
-          scopes: 'repo read:user'
+          scopes: 'repo read:user user:email'
         }
       });
       
       if (error) {
         console.error('Error signing in with GitHub:', error);
-        toast({
-          title: "Authentication Error",
-          description: error.message || "Failed to sign in with GitHub. Please check your configuration.",
-          variant: "destructive",
-        });
+        
+        if (error.message.includes('provider is not enabled')) {
+          toast({
+            title: "GitHub OAuth Not Configured",
+            description: "Please complete the GitHub OAuth setup instructions below before signing in.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Authentication Error",
+            description: error.message || "Failed to sign in with GitHub. Please check your configuration.",
+            variant: "destructive",
+          });
+        }
         setLoading(false);
       }
     } catch (error) {
