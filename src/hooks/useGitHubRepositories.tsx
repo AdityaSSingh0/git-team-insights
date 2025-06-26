@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useEffect } from 'react';
 
 interface GitHubRepository {
   id: number;
@@ -24,7 +25,7 @@ export const useGitHubRepositories = () => {
   const { session } = useAuth();
   const { toast } = useToast();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['github-repositories', session?.user?.id],
     queryFn: async (): Promise<GitHubRepository[]> => {
       if (!session?.provider_token) {
@@ -59,13 +60,19 @@ export const useGitHubRepositories = () => {
     },
     enabled: !!session?.provider_token,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    onError: (error: Error) => {
-      console.error('Repository fetch error:', error);
+  });
+
+  // Handle errors using useEffect instead of onError
+  useEffect(() => {
+    if (query.error) {
+      console.error('Repository fetch error:', query.error);
       toast({
         title: "Error fetching repositories",
-        description: error.message,
+        description: query.error.message,
         variant: "destructive",
       });
-    },
-  });
+    }
+  }, [query.error, toast]);
+
+  return query;
 };
