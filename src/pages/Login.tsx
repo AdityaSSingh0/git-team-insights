@@ -22,7 +22,22 @@ const Login = () => {
   };
 
   const handleExternalLink = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    try {
+      // Use a more robust method to open external links
+      const newWindow = window.open(url, '_blank', 'noopener,noreferrer,width=1200,height=800');
+      if (!newWindow) {
+        // Fallback if popup is blocked
+        window.location.href = url;
+      }
+    } catch (error) {
+      console.error('Error opening external link:', error);
+      // Final fallback - copy to clipboard or show alert
+      navigator.clipboard?.writeText(url).then(() => {
+        alert(`Link copied to clipboard: ${url}`);
+      }).catch(() => {
+        alert(`Please navigate to: ${url}`);
+      });
+    }
   };
 
   if (loading) {
@@ -92,7 +107,8 @@ const Login = () => {
                     Go to{' '}
                     <button 
                       onClick={() => handleExternalLink('https://github.com/settings/developers')}
-                      className="text-blue-600 hover:underline inline-flex items-center gap-1"
+                      className="text-blue-600 hover:underline inline-flex items-center gap-1 cursor-pointer bg-transparent border-none p-0 font-inherit"
+                      type="button"
                     >
                       GitHub Developer Settings <ExternalLink className="h-3 w-3" />
                     </button>
@@ -117,7 +133,8 @@ const Login = () => {
                     Go to{' '}
                     <button 
                       onClick={() => handleExternalLink('https://supabase.com/dashboard/project/nlnhpqkgyigztumogcge/auth/providers')}
-                      className="text-blue-600 hover:underline inline-flex items-center gap-1"
+                      className="text-blue-600 hover:underline inline-flex items-center gap-1 cursor-pointer bg-transparent border-none p-0 font-inherit"
+                      type="button"
                     >
                       Supabase Auth Providers <ExternalLink className="h-3 w-3" />
                     </button>
@@ -141,7 +158,8 @@ const Login = () => {
                     Go to{' '}
                     <button 
                       onClick={() => handleExternalLink('https://supabase.com/dashboard/project/nlnhpqkgyigztumogcge/auth/url-configuration')}
-                      className="text-blue-600 hover:underline inline-flex items-center gap-1"
+                      className="text-blue-600 hover:underline inline-flex items-center gap-1 cursor-pointer bg-transparent border-none p-0 font-inherit"
+                      type="button"
                     >
                       Supabase URL Configuration <ExternalLink className="h-3 w-3" />
                     </button>
