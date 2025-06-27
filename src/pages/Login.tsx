@@ -21,6 +21,10 @@ const Login = () => {
     await signInWithGitHub();
   };
 
+  const handleExternalLink = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -84,7 +88,15 @@ const Login = () => {
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Step 1: Create GitHub OAuth App</h4>
                 <ol className="list-decimal list-inside space-y-1 text-gray-600 ml-2">
-                  <li>Go to <a href="https://github.com/settings/developers" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-1">GitHub Developer Settings <ExternalLink className="h-3 w-3" /></a></li>
+                  <li>
+                    Go to{' '}
+                    <button 
+                      onClick={() => handleExternalLink('https://github.com/settings/developers')}
+                      className="text-blue-600 hover:underline inline-flex items-center gap-1"
+                    >
+                      GitHub Developer Settings <ExternalLink className="h-3 w-3" />
+                    </button>
+                  </li>
                   <li>Click "New OAuth App"</li>
                   <li>Fill in the application details:
                     <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
@@ -101,7 +113,15 @@ const Login = () => {
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Step 2: Configure Supabase</h4>
                 <ol className="list-decimal list-inside space-y-1 text-gray-600 ml-2">
-                  <li>Go to <a href="https://supabase.com/dashboard/project/nlnhpqkgyigztumogcge/auth/providers" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-1">Supabase Auth Providers <ExternalLink className="h-3 w-3" /></a></li>
+                  <li>
+                    Go to{' '}
+                    <button 
+                      onClick={() => handleExternalLink('https://supabase.com/dashboard/project/nlnhpqkgyigztumogcge/auth/providers')}
+                      className="text-blue-600 hover:underline inline-flex items-center gap-1"
+                    >
+                      Supabase Auth Providers <ExternalLink className="h-3 w-3" />
+                    </button>
+                  </li>
                   <li>Find and enable the GitHub provider</li>
                   <li>Enter your GitHub OAuth app credentials:
                     <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
@@ -117,7 +137,15 @@ const Login = () => {
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">Step 3: Configure URL Settings</h4>
                 <ol className="list-decimal list-inside space-y-1 text-gray-600 ml-2">
-                  <li>Go to <a href="https://supabase.com/dashboard/project/nlnhpqkgyigztumogcge/auth/url-configuration" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-1">Supabase URL Configuration <ExternalLink className="h-3 w-3" /></a></li>
+                  <li>
+                    Go to{' '}
+                    <button 
+                      onClick={() => handleExternalLink('https://supabase.com/dashboard/project/nlnhpqkgyigztumogcge/auth/url-configuration')}
+                      className="text-blue-600 hover:underline inline-flex items-center gap-1"
+                    >
+                      Supabase URL Configuration <ExternalLink className="h-3 w-3" />
+                    </button>
+                  </li>
                   <li>Set the <strong>Site URL</strong> to: <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">{window.location.origin}</code></li>
                   <li>Add <strong>Redirect URLs</strong>:
                     <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
